@@ -53,10 +53,30 @@ const Orcamento = () => {
 
   const formattedEstimate = resultado
     ? new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(resultado)
+      style: "currency",
+      currency: "BRL",
+    }).format(resultado)
     : "";
+
+  const salvarOrcamento = (novoOrcamento: any) => {
+    const lista = JSON.parse(localStorage.getItem("orcamentos") || "[]");
+
+    const jaExiste = lista.some((item: any) =>
+      item.nome === novoOrcamento.nome &&
+      item.tipoMovel === novoOrcamento.tipoMovel &&
+      item.material === novoOrcamento.material &&
+      item.largura === novoOrcamento.largura &&
+      item.altura === novoOrcamento.altura &&
+      item.valor === novoOrcamento.valor
+    );
+
+    if (jaExiste) {
+      return; // não salva duplicado
+    }
+
+    lista.push(novoOrcamento);
+    localStorage.setItem("orcamentos", JSON.stringify(lista));
+  };
 
   const handleCalculate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -72,9 +92,24 @@ const Orcamento = () => {
     }
 
     const { estimate, area } = calculateEstimate(tipoMovel, material, widthValue, heightValue);
+
     setResultado(estimate);
     setAreaCalculada(area);
     setMensagem("");
+
+    // 🔥 SALVAR ORÇAMENTO
+    salvarOrcamento({
+      id: Date.now(),
+      nome,
+      telefone,
+      tipoMovel,
+      material,
+      largura,
+      altura,
+      valor: estimate,
+      data: new Date().toLocaleDateString("pt-BR"),
+      status: "em_analise"
+    });
   };
 
   const handleSendWhatsApp = () => {
